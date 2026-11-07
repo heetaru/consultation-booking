@@ -1,4 +1,27 @@
 package sk.shkira.consultationbooking.consultant;
 
-public record Consultant(long id, String name, String specialty) {
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "consultants")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Consultant {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(nullable = false, length = 100)
+    private String specialty;
 }
