@@ -1,6 +1,7 @@
 import {Component, signal, OnInit, inject} from '@angular/core';
-import { ConsultantService} from './consultant.service';
-import { Consultant} from './consultant';
+import {ConsultantService} from './consultant.service';
+import {Consultant} from './consultant';
+import {BookingRequest, BookingResponse} from './booking';
 
 
 @Component({
@@ -17,6 +18,12 @@ export class App implements OnInit{
   protected readonly consultants = signal<Consultant[]>([]);
   protected readonly selectedConsultant = signal<Consultant | null>(null);
   protected readonly selectedDate = signal('');
+
+  protected readonly selectedSlot = signal('');
+  protected readonly bookingInProgress = signal(false);
+  protected readonly bookingMessage = signal('');
+  protected readonly bookingError = signal('');
+
   protected readonly slots = signal<string[]>([]);
   protected readonly loadingSlots = signal(false);
   protected readonly slotsLoaded = signal(false);
@@ -37,17 +44,30 @@ export class App implements OnInit{
     })
   }
   protected selectConsultant(consultant: Consultant):void{
+    this.bookingMessage.set('');
+    this.bookingError.set('');
     this.selectedConsultant.set(consultant);
     this.slots.set([]);
     this.slotsLoaded.set(false);
     this.slotsError.set('');
+    this.selectedSlot.set('');
   }
   protected selectDate(date: string):void{
+    this.bookingMessage.set('');
+    this.bookingError.set('');
     this.selectedDate.set(date);
     this.slots.set([]);
     this.slotsLoaded.set(false);
     this.slotsError.set('');
+    this.selectedSlot.set('');
+
   }
+  protected selectSlot(slot: string): void {
+    this.bookingMessage.set('');
+    this.bookingError.set('');
+    this.selectedSlot.set(slot);
+  }
+
   protected loadSlots(){
     const consultant = this.selectedConsultant();
     const date = this.selectedDate();
@@ -55,6 +75,9 @@ export class App implements OnInit{
     if (consultant === null || date === ''){
       return;
     }
+    this.selectedSlot.set('');
+    this.bookingMessage.set('');
+    this.bookingError.set('');
     this.loadingSlots.set(true);
     this.slotsLoaded.set(false);
     this.slotsError.set('');
@@ -73,4 +96,40 @@ export class App implements OnInit{
 
   }
 
+  protected createBooking(name: string, email:string){
+    const consultant = this.selectedConsultant();
+    const date = this.selectedDate();
+    const time = this.selectedSlot();
+
+    if (consultant === null || date === '' || time === '') {
+      return;
+    }
+
+    const booking: BookingRequest = {
+      consultantId: consultant.id,
+      date: date,
+      time: time,
+      name: name,
+      email: email,
+    };
+
+    this.bookingInProgress.set(true);
+    this.bookingMessage.set('');
+    this.bookingError.set('');
+
+    this.consultantService.createBooking(booking).subscribe({
+      next: (createdBooking) => {
+        this.bookingMessage.set(`Booking #${createdBooking.id} created successfully`)
+        this.bookingInProgress.set(false);
+        this.selectedSlot.set('');
+        this.slots.update((slots) => slots.filter((slot) => slot !== time));
+      },
+      error: () => {
+        this.bookingError.set('Could not create booking. The slot may no longer be available.');
+        this.bookingInProgress.set(false);
+      }
+    })
+
+
+  }
 }

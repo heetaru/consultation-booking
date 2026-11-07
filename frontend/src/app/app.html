@@ -19,7 +19,7 @@
       <p>{{ consultant.specialty }}</p>
       <button
         type="button"
-        [disabled]="loadingSlots()"
+        [disabled]="loadingSlots() || bookingInProgress()"
         (click)="selectConsultant(consultant)">
         Select</button>
     </li>
@@ -34,12 +34,12 @@
     id="date"
     type="date"
     #dateInput
-    [disabled]="loadingSlots()"
+    [disabled]="loadingSlots() || bookingInProgress()"
     (change)="selectDate(dateInput.value)">
 
   <button
     type="button"
-    [disabled]="!selectedDate() || loadingSlots()"
+    [disabled]="!selectedDate() || loadingSlots() || bookingInProgress()"
     (click)="loadSlots()">
     Show available slots
   </button>
@@ -58,7 +58,33 @@
 
   <ul>
     @for (slot of slots(); track slot) {
-      <li>{{ slot }}</li>
+      <li>
+        <button
+          type="button"
+          [disabled]="loadingSlots() || bookingInProgress()"
+          (click)="selectSlot(slot)">
+          {{ slot }}
+        </button>
+      </li>
     }
   </ul>
+  @if (selectedSlot() !== '') {
+    <p>Selected time: {{selectedSlot()}}</p>
+    <form ngNativeValidate (submit)="$event.preventDefault(); createBooking(nameInput.value, emailInput.value)">
+      <label for="name">Name:</label>
+      <input type="text" id="name" #nameInput required>
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" #emailInput required>
+
+      <button type="submit" [disabled]="bookingInProgress()">Submit</button>
+    </form>
+  }
+
+  @if (bookingMessage()) {
+    <p>{{ bookingMessage() }}</p>
+  }
+  @if (bookingError()) {
+    <p>{{ bookingError() }}</p>
+  }
 }
