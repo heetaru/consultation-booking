@@ -1,0 +1,64 @@
+<h1>Consultation booking</h1>
+<p>I love Nastya so much</p>
+<p>My life is gigga</p>
+
+
+
+
+<h2>Our consultants:</h2>
+@if (loading()) {
+  <p>Loading consultants...</p>
+}
+@if (errorMessage()) {
+  <p>{{errorMessage()}}</p>
+}
+<ul>
+  @for (consultant of consultants(); track consultant.id) {
+    <li>
+      <strong>{{consultant.id}}:{{consultant.name}}</strong>
+      <p>{{ consultant.specialty }}</p>
+      <button
+        type="button"
+        [disabled]="loadingSlots()"
+        (click)="selectConsultant(consultant)">
+        Select</button>
+    </li>
+  }
+</ul>
+
+@if (selectedConsultant(); as consultant) {
+  <h2>Available slots for {{ consultant.name }}</h2>
+
+  <label for="date">Choose a date:</label>
+  <input
+    id="date"
+    type="date"
+    #dateInput
+    [disabled]="loadingSlots()"
+    (change)="selectDate(dateInput.value)">
+
+  <button
+    type="button"
+    [disabled]="!selectedDate() || loadingSlots()"
+    (click)="loadSlots()">
+    Show available slots
+  </button>
+
+  @if (loadingSlots()) {
+    <p>Loading slots...</p>
+  }
+
+  @if (slotsError()) {
+    <p>{{ slotsError() }}</p>
+  }
+
+  @if (slotsLoaded() && slots().length === 0) {
+    <p>No available slots for this date.</p>
+  }
+
+  <ul>
+    @for (slot of slots(); track slot) {
+      <li>{{ slot }}</li>
+    }
+  </ul>
+}
