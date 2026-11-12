@@ -6,25 +6,27 @@
 
 
 <h2>Our consultants:</h2>
-@if (loading()) {
+@if (consultantsResource.isLoading()) {
   <p>Loading consultants...</p>
 }
-@if (errorMessage()) {
-  <p>{{errorMessage()}}</p>
+@if (consultantsResource.error()) {
+  <p>Could not load consultants.</p>
 }
-<ul>
-  @for (consultant of consultants(); track consultant.id) {
-    <li>
-      <strong>{{consultant.id}}:{{consultant.name}}</strong>
-      <p>{{ consultant.specialty }}</p>
-      <button
-        type="button"
-        [disabled]="loadingSlots() || bookingInProgress()"
-        (click)="selectConsultant(consultant)">
-        Select</button>
-    </li>
-  }
-</ul>
+@if (consultantsResource.hasValue()) {
+  <ul>
+    @for (consultant of consultantsResource.value(); track consultant.id) {
+      <li>
+        <strong>{{consultant.id}}:{{consultant.name}}</strong>
+        <p>{{ consultant.specialty }}</p>
+        <button
+          type="button"
+          [disabled]="slotsResource.isLoading() || bookingInProgress()"
+          (click)="selectConsultant(consultant)">
+          Select</button>
+      </li>
+    }
+  </ul>
+}
 
 @if (selectedConsultant(); as consultant) {
   <h2>Available slots for {{ consultant.name }}</h2>
@@ -34,40 +36,42 @@
     id="date"
     type="date"
     #dateInput
-    [disabled]="loadingSlots() || bookingInProgress()"
+    [disabled]="slotsResource.isLoading() || bookingInProgress()"
     (change)="selectDate(dateInput.value)">
 
   <button
     type="button"
-    [disabled]="!selectedDate() || loadingSlots() || bookingInProgress()"
+    [disabled]="!selectedDate() || slotsResource.isLoading() || bookingInProgress()"
     (click)="loadSlots()">
     Show available slots
   </button>
 
-  @if (loadingSlots()) {
+  @if (slotsResource.isLoading()) {
     <p>Loading slots...</p>
   }
 
-  @if (slotsError()) {
-    <p>{{ slotsError() }}</p>
+  @if (slotsResource.error()) {
+    <p>Could not load available slots.</p>
   }
 
-  @if (slotsLoaded() && slots().length === 0) {
-    <p>No available slots for this date.</p>
-  }
-
-  <ul>
-    @for (slot of slots(); track slot) {
-      <li>
-        <button
-          type="button"
-          [disabled]="loadingSlots() || bookingInProgress()"
-          (click)="selectSlot(slot)">
-          {{ slot }}
-        </button>
-      </li>
+  @if (slotsResource.hasValue()) {
+    @if (!slotsResource.isLoading() && slotsResource.value().length === 0) {
+      <p>No available slots for this date.</p>
     }
-  </ul>
+
+    <ul>
+      @for (slot of slotsResource.value(); track slot) {
+        <li>
+          <button
+            type="button"
+            [disabled]="slotsResource.isLoading() || bookingInProgress()"
+            (click)="selectSlot(slot)">
+            {{ slot }}
+          </button>
+        </li>
+      }
+    </ul>
+  }
   @if (selectedSlot() !== '') {
     <p>Selected time: {{selectedSlot()}}</p>
     <form ngNativeValidate (submit)="$event.preventDefault(); createBooking(nameInput.value, emailInput.value)">
@@ -87,4 +91,26 @@
   @if (bookingError()) {
     <p>{{ bookingError() }}</p>
   }
+}
+
+<h2>Bookings:</h2>
+@if (bookingsResource.isLoading()) {
+  <p>Loading bookings...</p>
+}
+@if (bookingsResource.error()) {
+  <p>Could not load bookings.</p>
+}
+@if (bookingsResource.hasValue()) {
+  @if (!bookingsResource.isLoading() && bookingsResource.value().length === 0) {
+    <p>No bookings yet.</p>
+  }
+  <ul>
+    @for (booking of bookingsResource.value(); track booking.id) {
+      <li>
+        <strong>Booking #{{ booking.id }}</strong>
+        <p>{{ booking.name }} — Consultant #{{ booking.consultantId }}</p>
+        <p>{{ booking.date }} at {{ booking.time }}</p>
+      </li>
+    }
+  </ul>
 }
