@@ -37,40 +37,41 @@
     id="date"
     type="date"
     #dateInput
-    [disabled]="loadingSlots() || bookingInProgress()"
+    [disabled]="slotsResource.isLoading() || bookingInProgress()"
     (change)="selectDate(dateInput.value)">
 
   <button
     type="button"
-    [disabled]="!selectedDate() || loadingSlots() || bookingInProgress()"
+    [disabled]="!selectedDate() || slotsResource.isLoading() || bookingInProgress()"
     (click)="loadSlots()">
     Show available slots
   </button>
 
-  @if (loadingSlots()) {
+  @if (slotsResource.isLoading()) {
     <p>Loading slots...</p>
   }
 
-  @if (slotsError()) {
-    <p>{{ slotsError() }}</p>
+  @if (slotsResource.error()) {
+    <p>Cannot load slots.</p>
   }
 
-  @if (slotsLoaded() && slots().length === 0) {
+  @if (slotsResource.hasValue()  && slotsResource.value().length === 0 && !slotsResource.isLoading()) {
     <p>No available slots for this date.</p>
   }
-
-  <ul>
-    @for (slot of slots(); track slot) {
-      <li>
-        <button
-          type="button"
-          [disabled]="loadingSlots() || bookingInProgress()"
-          (click)="selectSlot(slot)">
-          {{ slot }}
-        </button>
-      </li>
-    }
-  </ul>
+  @if (slotsResource.hasValue()) {
+    <ul>
+      @for (slot of slotsResource.value(); track slot) {
+        <li>
+          <button
+            type="button"
+            [disabled]="slotsResource.isLoading() || bookingInProgress()"
+            (click)="selectSlot(slot)">
+            {{ slot }}
+          </button>
+        </li>
+      }
+    </ul>
+  }
   @if (selectedSlot() !== '') {
     <p>Selected time: {{selectedSlot()}}</p>
     <form ngNativeValidate (submit)="$event.preventDefault(); createBooking(nameInput.value, emailInput.value)">
@@ -89,5 +90,38 @@
   }
   @if (bookingError()) {
     <p>{{ bookingError() }}</p>
+  }
+}
+
+<h2>Bookings:</h2>
+
+<p>{{cancelingMessage()}}</p>
+<p>{{cancelingError()}}</p>
+
+@if (bookingResource.isLoading()) {
+  <p>Loading bookings...</p>
+}
+@if (bookingResource.error()) {
+  <p>Cannot load bookings.</p>
+}
+@if (bookingResource.hasValue()) {
+  @if (bookingResource.value().length === 0 && !bookingResource.isLoading()) {
+    <p>No bookings yet.</p>
+  } @else {
+    @for (booking of bookingResource.value(); track booking.id) {
+      <p>Booking #{{booking.id}}.  Name: {{booking.name}}. Consultant: {{booking.consultantId}}. Date: {{booking.date}} {{booking.time}}</p>
+
+      <button
+        type="button"
+        (click)="cancelBooking(booking.id)"
+        [disabled]="cancelingBookingId() !== null || bookingResource.isLoading()"
+      >
+        @if (cancelingBookingId() === booking.id) {
+          Canceling #{{booking.id}}
+        } @else {
+          Cancel
+        }
+      </button>
+    }
   }
 }

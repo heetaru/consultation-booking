@@ -17,14 +17,6 @@ export class ConsultantService{
   };
 
 
-  getAvailableSlots(
-    consultantId: number,
-    date: string
-  ){
-    return this.http.get<string[]>(`api/consultants/${consultantId}/slots?date=${date}`)
-  };
-
-
   createBooking(
     booking: BookingRequest
   ){
@@ -45,5 +37,15 @@ export class ConsultantService{
 
       return `/api/consultants/${currentConsultant.id}/slots?date=${currentDate}`
     });
+  }
+
+  createBookingResource(){
+    return httpResource<BookingResponse[]>(
+      () => '/api/bookings'
+    )
+  }
+
+  cancelBooking(id: number){
+    return this.http.delete<void>(`/api/bookings/${id}`)
   }
 }
