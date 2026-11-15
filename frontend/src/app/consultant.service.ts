@@ -1,40 +1,49 @@
-import { HttpClient, httpResource } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { Consultant } from './consultant';
-import { BookingRequest, BookingResponse } from './booking';
+import { HttpClient, httpResource} from '@angular/common/http';
+import { inject, Injectable} from '@angular/core';
+import { Consultant} from './consultant';
+import { BookingRequest, BookingResponse} from './booking';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ConsultantService {
+export class ConsultantService{
   private readonly http = inject(HttpClient);
 
-  createConsultantsResource() {
-    return httpResource<Consultant[]>(() => '/api/consultants');
-  }
 
-  createBookingsResource() {
-    return httpResource<BookingResponse[]>(() => '/api/bookings');
-  }
+  createConsultantsResource(){
+    return httpResource<Consultant[]>(
+      () => '/api/consultants'
+    )
+  };
+
+
+  getAvailableSlots(
+    consultantId: number,
+    date: string
+  ){
+    return this.http.get<string[]>(`api/consultants/${consultantId}/slots?date=${date}`)
+  };
+
+
+  createBooking(
+    booking: BookingRequest
+  ){
+    return this.http.post<BookingResponse>('api/bookings', booking)
+  };
+
 
   createSlotsResource(
     consultant: () => Consultant | null,
     date: () => string,
-    slotsRequested: () => boolean,
+    requested: () => boolean,
   ) {
     return httpResource<string[]>(() => {
-      const selectedConsultant = consultant();
-      const selectedDate = date();
+      const currentConsultant = consultant();
+      const currentDate = date();
 
-      if (!slotsRequested() || selectedConsultant === null || selectedDate === '') {
-        return undefined;
-      }
+      if (currentConsultant === null || currentDate === '' || requested() === false){return undefined;}
 
-      return `/api/consultants/${selectedConsultant.id}/slots?date=${selectedDate}`;
+      return `/api/consultants/${currentConsultant.id}/slots?date=${currentDate}`
     });
-  }
-
-  createBooking(booking: BookingRequest) {
-    return this.http.post<BookingResponse>('/api/bookings', booking);
   }
 }
