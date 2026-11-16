@@ -15,6 +15,11 @@ export class App {
 
   protected readonly consultantsResource = this.consultantService.createConsultantsResource();
   protected readonly bookingResource = this.consultantService.createBookingResource();
+
+  protected readonly searchedBookingId = signal<number | null>(null);
+  protected readonly searchValidationError = signal('');
+  protected readonly bookingSearchResource = this.consultantService.createBookingSearchResource(this.searchedBookingId);
+
   protected readonly selectedConsultant = signal<Consultant | null>(null);
   protected readonly selectedDate = signal('');
   private readonly slotsRequested = signal(false);
@@ -128,6 +133,7 @@ export class App {
         this.cancelingMessage.set(`Booking #${id} has been cancelled.`)
         this.cancelingError.set('');
         this.cancelingBookingId.set(null);
+        if (this.searchedBookingId() === id) this.searchedBookingId.set(null);
         this.bookingResource.reload();
         this.slotsResource.reload();
       },
@@ -137,6 +143,22 @@ export class App {
         this.cancelingBookingId.set(null);
       }
     })
+  }
+
+  protected searchBooking(id:number){
+    this.searchValidationError.set('');
+
+    if (id <= 0 || !Number.isInteger(id)){
+      this.searchedBookingId.set(null);
+      this.searchValidationError.set('Enter a positive id number.')
+      return;
+    }
+    if (id === this.searchedBookingId()) {
+      this.bookingSearchResource.reload();
+      return;
+    }
+
+    this.searchedBookingId.set(id);
   }
 
 }

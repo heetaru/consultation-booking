@@ -125,3 +125,54 @@
     }
   }
 }
+
+<h2>Find Booking</h2>
+
+<form
+  ngNativeValidate
+  (submit)="$event.preventDefault(); searchBooking(bookingIdInput.valueAsNumber)"
+>
+  <label for="id">Enter your booking ID</label>
+  <input
+    type="number"
+    required
+    id="id"
+    min="1"
+    step="1"
+    #bookingIdInput
+  >
+  <button
+    type="submit"
+    [disabled]="bookingSearchResource.isLoading()"
+  >Find</button>
+</form>
+
+@if (bookingSearchResource.isLoading()) {
+  <p>Loading your booking...</p>
+}
+@if (bookingSearchResource.error()) {
+  <p>Could not load booking.</p>
+}
+
+@if (searchValidationError() !== '') {
+  <p>{{searchValidationError()}}</p>
+}
+
+@if (bookingSearchResource.hasValue()) {
+  <p>Booking #{{bookingSearchResource.value().id}}.  Name: {{bookingSearchResource.value().name}}. Consultant: {{bookingSearchResource.value().consultantId}}. Date: {{bookingSearchResource.value().date}} {{bookingSearchResource.value().time}}</p>
+  <button
+    type="button"
+    [disabled]="cancelingBookingId() !== null || bookingSearchResource.isLoading()"
+    (click)="cancelBooking(bookingSearchResource.value().id)"
+  >
+    @if (cancelingBookingId() === bookingSearchResource.value().id) {
+      Canceling #{{bookingSearchResource.value().id}}
+    } @else {
+      Cancel
+    }
+  </button>
+}
+<button
+  type="button"
+  (click)="searchedBookingId.set(null); searchValidationError.set('');bookingIdInput.value = ''"
+>Clear result</button>

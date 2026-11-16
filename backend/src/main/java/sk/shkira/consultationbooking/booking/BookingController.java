@@ -37,6 +37,11 @@ public class BookingController {
         return bookingService.getBookings();
     }
 
+    @GetMapping("/api/bookings/{bookingId}")
+    public ResponseEntity<BookingResponse> getBookingById(@PathVariable long bookingId){
+        return ResponseEntity.ok(bookingService.getBookingById(bookingId));
+    }
+
     @DeleteMapping("/api/bookings/{id}")
     public ResponseEntity<Void> cancel(@PathVariable long id) {
         bookingService.cancel(id);

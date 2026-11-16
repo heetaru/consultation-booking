@@ -70,6 +70,12 @@ public class BookingService {
                 .map(BookingResponse::from).toList();
     }
 
+    public BookingResponse getBookingById(long bookingId) {
+        Booking currentBooking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+        return BookingResponse.from(currentBooking);
+    }
+
     public void cancel(long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
@@ -86,4 +92,5 @@ public class BookingService {
     private boolean isWeekend(LocalDate date) {
         return date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY;
     }
+
 }

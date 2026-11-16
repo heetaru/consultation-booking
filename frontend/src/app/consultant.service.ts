@@ -13,14 +13,14 @@ export class ConsultantService{
   createConsultantsResource(){
     return httpResource<Consultant[]>(
       () => '/api/consultants'
-    )
+    );
   };
 
 
   createBooking(
     booking: BookingRequest
   ){
-    return this.http.post<BookingResponse>('api/bookings', booking)
+    return this.http.post<BookingResponse>('api/bookings', booking);
   };
 
 
@@ -42,10 +42,22 @@ export class ConsultantService{
   createBookingResource(){
     return httpResource<BookingResponse[]>(
       () => '/api/bookings'
-    )
+    );
+  }
+
+  createBookingSearchResource(id: () => number | null){
+    return httpResource<BookingResponse>(
+      () => {
+        const currentId = id();
+        if (currentId === null){
+          return undefined;
+        }
+        return `/api/bookings/${currentId}`
+      }
+    );
   }
 
   cancelBooking(id: number){
-    return this.http.delete<void>(`/api/bookings/${id}`)
+    return this.http.delete<void>(`/api/bookings/${id}`);
   }
 }
