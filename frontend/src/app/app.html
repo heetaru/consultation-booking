@@ -1,7 +1,5 @@
 <main class="page">
   <h1>Consultation booking</h1>
-  <p>I love Nastya so much</p>
-  <p>My life is gigga</p>
 
   <h2>Our consultants:</h2>
   @if (consultantsResource.isLoading()) {
@@ -120,6 +118,30 @@
 
   <h2>Bookings:</h2>
 
+  @if (consultantsResource.hasValue()) {
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Filter bookings by consultant</mat-label>
+      <select
+        matNativeControl
+        id="booking-consultant-filter"
+        #consultantFilter
+        (change)="filterBookings(consultantFilter.value)"
+      >
+        <option value="">All consultants</option>
+
+        @for (consultant of consultantsResource.value(); track consultant.id) {
+          <option [value]="consultant.id">
+            {{ consultant.name }}
+          </option>
+        }
+      </select>
+    </mat-form-field>
+  }
+
+  @if (filterValidationError()) {
+    <p>{{ filterValidationError() }}</p>
+  }
+
   <p>{{ cancelingMessage() }}</p>
   <p>{{ cancelingError() }}</p>
 
@@ -153,30 +175,6 @@
         </button>
       }
     }
-  }
-
-  @if (consultantsResource.hasValue()) {
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Filter bookings by consultant</mat-label>
-      <select
-        matNativeControl
-        id="booking-consultant-filter"
-        #consultantFilter
-        (change)="filterBookings(consultantFilter.value)"
-      >
-        <option value="">All consultants</option>
-
-        @for (consultant of consultantsResource.value(); track consultant.id) {
-          <option [value]="consultant.id">
-            {{ consultant.name }}
-          </option>
-        }
-      </select>
-    </mat-form-field>
-  }
-
-  @if (filterValidationError()) {
-    <p>{{ filterValidationError() }}</p>
   }
 
   <h2>Find Booking</h2>
@@ -213,25 +211,31 @@
       {{ bookingSearchResource.value().consultantId }}. Date:
       {{ bookingSearchResource.value().date }} {{ bookingSearchResource.value().time }}
     </p>
+  }
+
+  <div class="search-actions">
+    @if (bookingSearchResource.hasValue()) {
+      <button
+        matButton="outlined"
+        type="button"
+        [disabled]="cancelingBookingId() !== null || bookingSearchResource.isLoading()"
+        (click)="cancelBooking(bookingSearchResource.value().id)"
+      >
+        @if (cancelingBookingId() === bookingSearchResource.value().id) {
+          Canceling #{{ bookingSearchResource.value().id }}
+        } @else {
+          Cancel
+        }
+      </button>
+    }
     <button
       matButton="outlined"
       type="button"
-      [disabled]="cancelingBookingId() !== null || bookingSearchResource.isLoading()"
-      (click)="cancelBooking(bookingSearchResource.value().id)"
+      (click)="
+        searchedBookingId.set(null); searchValidationError.set(''); bookingIdInput.value = ''
+      "
     >
-      @if (cancelingBookingId() === bookingSearchResource.value().id) {
-        Canceling #{{ bookingSearchResource.value().id }}
-      } @else {
-        Cancel
-      }
+      Clear result
     </button>
-  }
-  <button
-    class="search-clear"
-    matButton="outlined"
-    type="button"
-    (click)="searchedBookingId.set(null); searchValidationError.set(''); bookingIdInput.value = ''"
-  >
-    Clear result
-  </button>
+  </div>
 </main>

@@ -91,6 +91,10 @@
   min-width: 0;
 }
 
-.search-clear {
+.search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
   margin-top: 16px;
 }
