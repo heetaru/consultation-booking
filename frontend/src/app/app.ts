@@ -2,19 +2,25 @@ import {Component, signal, inject} from '@angular/core';
 import {ConsultantService} from './consultant.service';
 import {Consultant} from './consultant';
 import {BookingRequest, BookingResponse} from './booking';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 
 @Component({
-  imports: [],
+  imports: [MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
 })
 export class App {
   private readonly consultantService = inject(ConsultantService);
+  protected readonly bookingConsultantFilter = signal<number|null>(null);
+  protected readonly filterValidationError = signal('');
 
   protected readonly consultantsResource = this.consultantService.createConsultantsResource();
-  protected readonly bookingResource = this.consultantService.createBookingResource();
+  protected readonly bookingResource = this.consultantService.createBookingResource(this.bookingConsultantFilter);
 
   protected readonly searchedBookingId = signal<number | null>(null);
   protected readonly searchValidationError = signal('');
@@ -159,6 +165,24 @@ export class App {
     }
 
     this.searchedBookingId.set(id);
+  }
+
+  protected filterBookings(consultantId: string){
+    this.filterValidationError.set('');
+
+    const value = consultantId.trim();
+    if (value === '') {
+      this.bookingConsultantFilter.set(null);
+      return;
+    }
+
+    const id = Number(value);
+    if (!Number.isInteger(id) || id <= 0){
+      this.filterValidationError.set('Enter a positive whole consultant ID.');
+      return;
+    }
+
+    this.bookingConsultantFilter.set(id);
   }
 
 }

@@ -1,178 +1,237 @@
-<h1>Consultation booking</h1>
-<p>I love Nastya so much</p>
-<p>My life is gigga</p>
+<main class="page">
+  <h1>Consultation booking</h1>
+  <p>I love Nastya so much</p>
+  <p>My life is gigga</p>
 
-
-
-
-<h2>Our consultants:</h2>
-@if (consultantsResource.isLoading()) {
-  <p>Loading consultants...</p>
-}
-@if (consultantsResource.error()) {
-  <p>Could not load consultants.</p>
-}
-@if (consultantsResource.hasValue()) {
-  <ul>
-    @for (consultant of consultantsResource.value(); track consultant.id) {
-      <li>
-        <strong>{{consultant.id}}:{{consultant.name}}</strong>
-        <p>{{ consultant.specialty }}</p>
-        <button
-          type="button"
-          [disabled]="slotsResource.isLoading() || bookingInProgress()"
-          (click)="selectConsultant(consultant)">
-          Select</button>
-      </li>
-    }
-  </ul>
-}
-
-
-@if (selectedConsultant(); as consultant) {
-  <h2>Available slots for {{ consultant.name }}</h2>
-
-  <label for="date">Choose a date:</label>
-  <input
-    id="date"
-    type="date"
-    #dateInput
-    [disabled]="slotsResource.isLoading() || bookingInProgress()"
-    (change)="selectDate(dateInput.value)">
-
-  <button
-    type="button"
-    [disabled]="!selectedDate() || slotsResource.isLoading() || bookingInProgress()"
-    (click)="loadSlots()">
-    Show available slots
-  </button>
-
-  @if (slotsResource.isLoading()) {
-    <p>Loading slots...</p>
+  <h2>Our consultants:</h2>
+  @if (consultantsResource.isLoading()) {
+    <p>Loading consultants...</p>
   }
-
-  @if (slotsResource.error()) {
-    <p>Cannot load slots.</p>
+  @if (consultantsResource.error()) {
+    <p>Could not load consultants.</p>
   }
+  @if (consultantsResource.hasValue()) {
+    <div class="consultants-grid">
+      @for (consultant of consultantsResource.value(); track consultant.id) {
+        <mat-card appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>{{ consultant.id }}: {{ consultant.name }}</mat-card-title>
+            <mat-card-subtitle>{{ consultant.specialty }}</mat-card-subtitle>
+          </mat-card-header>
 
-  @if (slotsResource.hasValue()  && slotsResource.value().length === 0 && !slotsResource.isLoading()) {
-    <p>No available slots for this date.</p>
-  }
-  @if (slotsResource.hasValue()) {
-    <ul>
-      @for (slot of slotsResource.value(); track slot) {
-        <li>
-          <button
-            type="button"
-            [disabled]="slotsResource.isLoading() || bookingInProgress()"
-            (click)="selectSlot(slot)">
-            {{ slot }}
-          </button>
-        </li>
+          <mat-card-actions>
+            <button
+              matButton="filled"
+              type="button"
+              [disabled]="slotsResource.isLoading() || bookingInProgress()"
+              (click)="selectConsultant(consultant)"
+            >
+              Select
+            </button>
+          </mat-card-actions>
+        </mat-card>
       }
-    </ul>
-  }
-  @if (selectedSlot() !== '') {
-    <p>Selected time: {{selectedSlot()}}</p>
-    <form ngNativeValidate (submit)="$event.preventDefault(); createBooking(nameInput.value, emailInput.value)">
-      <label for="name">Name:</label>
-      <input type="text" id="name" #nameInput required>
-
-      <label for="email">Email:</label>
-      <input type="email" id="email" #emailInput required>
-
-      <button type="submit" [disabled]="bookingInProgress()">Submit</button>
-    </form>
+    </div>
   }
 
-  @if (bookingMessage()) {
-    <p>{{ bookingMessage() }}</p>
+  @if (selectedConsultant(); as consultant) {
+    <section class="booking-section">
+      <h2>Available slots for {{ consultant.name }}</h2>
+      <div class="date-controls">
+        <mat-form-field appearance="outline">
+          <mat-label>Choose a date:</mat-label>
+          <input
+            matInput
+            id="date"
+            type="date"
+            #dateInput
+            [disabled]="slotsResource.isLoading() || bookingInProgress()"
+            (change)="selectDate(dateInput.value)"
+          />
+        </mat-form-field>
+        <button
+          matButton="outlined"
+          type="button"
+          [disabled]="!selectedDate() || slotsResource.isLoading() || bookingInProgress()"
+          (click)="loadSlots()"
+        >
+          Show available slots
+        </button>
+      </div>
+
+      @if (slotsResource.isLoading()) {
+        <p>Loading slots...</p>
+      }
+
+      @if (slotsResource.error()) {
+        <p>Cannot load slots.</p>
+      }
+
+      @if (
+        slotsResource.hasValue() && slotsResource.value().length === 0 && !slotsResource.isLoading()
+      ) {
+        <p>No available slots for this date.</p>
+      }
+      @if (slotsResource.hasValue()) {
+        <ul class="slots-list">
+          @for (slot of slotsResource.value(); track slot) {
+            <li>
+              <button
+                matButton="tonal"
+                type="button"
+                [disabled]="slotsResource.isLoading() || bookingInProgress()"
+                (click)="selectSlot(slot)"
+              >
+                {{ slot }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+      @if (selectedSlot() !== "") {
+        <p>Selected time: {{ selectedSlot() }}</p>
+        <form
+          class="booking-form"
+          ngNativeValidate
+          (submit)="$event.preventDefault(); createBooking(nameInput.value, emailInput.value)"
+        >
+          <mat-form-field appearance="outline">
+            <mat-label>Name:</mat-label>
+            <input matInput type="text" id="name" #nameInput required />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Email:</mat-label>
+            <input matInput type="email" id="email" #emailInput required />
+          </mat-form-field>
+
+          <button matButton="filled" type="submit" [disabled]="bookingInProgress()">Submit</button>
+        </form>
+      }
+
+      @if (bookingMessage()) {
+        <p>{{ bookingMessage() }}</p>
+      }
+      @if (bookingError()) {
+        <p>{{ bookingError() }}</p>
+      }
+    </section>
   }
-  @if (bookingError()) {
-    <p>{{ bookingError() }}</p>
+
+  <h2>Bookings:</h2>
+
+  <p>{{ cancelingMessage() }}</p>
+  <p>{{ cancelingError() }}</p>
+
+  @if (bookingResource.isLoading()) {
+    <p>Loading bookings...</p>
   }
-}
-
-<h2>Bookings:</h2>
-
-<p>{{cancelingMessage()}}</p>
-<p>{{cancelingError()}}</p>
-
-@if (bookingResource.isLoading()) {
-  <p>Loading bookings...</p>
-}
-@if (bookingResource.error()) {
-  <p>Cannot load bookings.</p>
-}
-@if (bookingResource.hasValue()) {
-  @if (bookingResource.value().length === 0 && !bookingResource.isLoading()) {
-    <p>No bookings yet.</p>
-  } @else {
-    @for (booking of bookingResource.value(); track booking.id) {
-      <p>Booking #{{booking.id}}.  Name: {{booking.name}}. Consultant: {{booking.consultantId}}. Date: {{booking.date}} {{booking.time}}</p>
-
-      <button
-        type="button"
-        (click)="cancelBooking(booking.id)"
-        [disabled]="cancelingBookingId() !== null || bookingResource.isLoading()"
-      >
-        @if (cancelingBookingId() === booking.id) {
-          Canceling #{{booking.id}}
-        } @else {
-          Cancel
-        }
-      </button>
-    }
+  @if (bookingResource.error()) {
+    <p>Cannot load bookings.</p>
   }
-}
-
-<h2>Find Booking</h2>
-
-<form
-  ngNativeValidate
-  (submit)="$event.preventDefault(); searchBooking(bookingIdInput.valueAsNumber)"
->
-  <label for="id">Enter your booking ID</label>
-  <input
-    type="number"
-    required
-    id="id"
-    min="1"
-    step="1"
-    #bookingIdInput
-  >
-  <button
-    type="submit"
-    [disabled]="bookingSearchResource.isLoading()"
-  >Find</button>
-</form>
-
-@if (bookingSearchResource.isLoading()) {
-  <p>Loading your booking...</p>
-}
-@if (bookingSearchResource.error()) {
-  <p>Could not load booking.</p>
-}
-
-@if (searchValidationError() !== '') {
-  <p>{{searchValidationError()}}</p>
-}
-
-@if (bookingSearchResource.hasValue()) {
-  <p>Booking #{{bookingSearchResource.value().id}}.  Name: {{bookingSearchResource.value().name}}. Consultant: {{bookingSearchResource.value().consultantId}}. Date: {{bookingSearchResource.value().date}} {{bookingSearchResource.value().time}}</p>
-  <button
-    type="button"
-    [disabled]="cancelingBookingId() !== null || bookingSearchResource.isLoading()"
-    (click)="cancelBooking(bookingSearchResource.value().id)"
-  >
-    @if (cancelingBookingId() === bookingSearchResource.value().id) {
-      Canceling #{{bookingSearchResource.value().id}}
+  @if (bookingResource.hasValue()) {
+    @if (bookingResource.value().length === 0 && !bookingResource.isLoading()) {
+      <p>No bookings match this filter.</p>
     } @else {
-      Cancel
+      @for (booking of bookingResource.value(); track booking.id) {
+        <p>
+          Booking #{{ booking.id }}. Name: {{ booking.name }}. Consultant:
+          {{ booking.consultantId }}. Date: {{ booking.date }} {{ booking.time }}
+        </p>
+
+        <button
+          matButton="outlined"
+          type="button"
+          (click)="cancelBooking(booking.id)"
+          [disabled]="cancelingBookingId() !== null || bookingResource.isLoading()"
+        >
+          @if (cancelingBookingId() === booking.id) {
+            Canceling #{{ booking.id }}
+          } @else {
+            Cancel
+          }
+        </button>
+      }
     }
+  }
+
+  @if (consultantsResource.hasValue()) {
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Filter bookings by consultant</mat-label>
+      <select
+        matNativeControl
+        id="booking-consultant-filter"
+        #consultantFilter
+        (change)="filterBookings(consultantFilter.value)"
+      >
+        <option value="">All consultants</option>
+
+        @for (consultant of consultantsResource.value(); track consultant.id) {
+          <option [value]="consultant.id">
+            {{ consultant.name }}
+          </option>
+        }
+      </select>
+    </mat-form-field>
+  }
+
+  @if (filterValidationError()) {
+    <p>{{ filterValidationError() }}</p>
+  }
+
+  <h2>Find Booking</h2>
+
+  <form
+    class="search-form"
+    ngNativeValidate
+    (submit)="$event.preventDefault(); searchBooking(bookingIdInput.valueAsNumber)"
+  >
+    <mat-form-field appearance="outline">
+      <mat-label>Enter your booking ID</mat-label>
+      <input matInput type="number" required id="id" min="1" step="1" #bookingIdInput />
+    </mat-form-field>
+    <button matButton="filled" type="submit" [disabled]="bookingSearchResource.isLoading()">
+      Find
+    </button>
+  </form>
+
+  @if (bookingSearchResource.isLoading()) {
+    <p>Loading your booking...</p>
+  }
+  @if (bookingSearchResource.error()) {
+    <p>Could not load booking.</p>
+  }
+
+  @if (searchValidationError() !== "") {
+    <p>{{ searchValidationError() }}</p>
+  }
+
+  @if (bookingSearchResource.hasValue()) {
+    <p>
+      Booking #{{ bookingSearchResource.value().id }}. Name:
+      {{ bookingSearchResource.value().name }}. Consultant:
+      {{ bookingSearchResource.value().consultantId }}. Date:
+      {{ bookingSearchResource.value().date }} {{ bookingSearchResource.value().time }}
+    </p>
+    <button
+      matButton="outlined"
+      type="button"
+      [disabled]="cancelingBookingId() !== null || bookingSearchResource.isLoading()"
+      (click)="cancelBooking(bookingSearchResource.value().id)"
+    >
+      @if (cancelingBookingId() === bookingSearchResource.value().id) {
+        Canceling #{{ bookingSearchResource.value().id }}
+      } @else {
+        Cancel
+      }
+    </button>
+  }
+  <button
+    class="search-clear"
+    matButton="outlined"
+    type="button"
+    (click)="searchedBookingId.set(null); searchValidationError.set(''); bookingIdInput.value = ''"
+  >
+    Clear result
   </button>
-}
-<button
-  type="button"
-  (click)="searchedBookingId.set(null); searchValidationError.set('');bookingIdInput.value = ''"
->Clear result</button>
+</main>

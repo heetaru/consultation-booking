@@ -8,4 +8,5 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByConsultantIdAndBookingDate(Long consultantId, LocalDate bookingDate);
     List<Booking> findAllByOrderByBookingDateAscStartTimeAsc();
+    List<Booking> findByConsultantIdOrderByBookingDateAscStartTimeAsc(Long consultantId);
 }

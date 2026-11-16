@@ -39,9 +39,17 @@ export class ConsultantService{
     });
   }
 
-  createBookingResource(){
+  createBookingResource(
+    consultantId: () => number | null,
+  ){
     return httpResource<BookingResponse[]>(
-      () => '/api/bookings'
+      () => {
+        const currentId = consultantId();
+        if (currentId === null){
+          return '/api/bookings'
+        }
+        return `/api/bookings?consultantId=${currentId}`
+      }
     );
   }
 

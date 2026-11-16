@@ -1,6 +1,8 @@
 package sk.shkira.consultationbooking.booking;
 
+import jakarta.xml.bind.ValidationException;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -65,8 +67,14 @@ public class BookingService {
         }
     }
 
-    public List<BookingResponse> getBookings() {
-        return bookingRepository.findAllByOrderByBookingDateAscStartTimeAsc().stream()
+    public List<BookingResponse> getBookings(Long consultantId){
+
+        if (consultantId == null){
+            return bookingRepository.findAllByOrderByBookingDateAscStartTimeAsc().stream()
+                    .map(BookingResponse::from).toList();
+        }
+        consultantService.requireConsultant(consultantId);
+        return bookingRepository.findByConsultantIdOrderByBookingDateAscStartTimeAsc(consultantId).stream()
                 .map(BookingResponse::from).toList();
     }
 
@@ -92,5 +100,4 @@ public class BookingService {
     private boolean isWeekend(LocalDate date) {
         return date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY;
     }
-
 }

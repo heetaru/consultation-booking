@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.awt.print.Book;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,9 +34,10 @@ public class BookingController {
     }
 
     @GetMapping("/api/bookings")
-    public List<BookingResponse> getBookings() {
-        return bookingService.getBookings();
+    public List<BookingResponse> getBookings(@RequestParam(required = false) Long consultantId) {
+        return bookingService.getBookings(consultantId);
     }
+
 
     @GetMapping("/api/bookings/{bookingId}")
     public ResponseEntity<BookingResponse> getBookingById(@PathVariable long bookingId){
