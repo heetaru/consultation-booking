@@ -12,7 +12,7 @@ public record BookingRequest(
         @NotNull Long consultantId,
         @NotNull LocalDate date,
         @NotNull LocalTime time,
-        @NotBlank String name,
-        @NotBlank @Email String email
+        @NotBlank @Size(max = 100) String name,
+        @NotBlank @Email @Size(max = 254) String email
 ) {
 }

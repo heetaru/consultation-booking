@@ -11,9 +11,12 @@
   @if (consultantsResource.hasValue()) {
     <div class="consultants-grid">
       @for (consultant of consultantsResource.value(); track consultant.id) {
-        <mat-card appearance="outlined">
+        <mat-card
+          appearance="outlined"
+          [class.consultant-selected]="selectedConsultant()?.id === consultant.id"
+        >
           <mat-card-header>
-            <mat-card-title>{{ consultant.id }}: {{ consultant.name }}</mat-card-title>
+            <mat-card-title>{{ consultant.name }}</mat-card-title>
             <mat-card-subtitle>{{ consultant.specialty }}</mat-card-subtitle>
           </mat-card-header>
 
@@ -22,9 +25,10 @@
               matButton="filled"
               type="button"
               [disabled]="slotsResource.isLoading() || bookingInProgress()"
+              [attr.aria-pressed]="selectedConsultant()?.id === consultant.id"
               (click)="selectConsultant(consultant)"
             >
-              Select
+              {{ selectedConsultant()?.id === consultant.id ? 'Selected' : 'Select' }}
             </button>
           </mat-card-actions>
         </mat-card>
@@ -75,7 +79,8 @@
           @for (slot of slotsResource.value(); track slot) {
             <li>
               <button
-                matButton="tonal"
+                [matButton]="selectedSlot() === slot ? 'filled' : 'tonal'"
+                [attr.aria-pressed]="selectedSlot() === slot"
                 type="button"
                 [disabled]="slotsResource.isLoading() || bookingInProgress()"
                 (click)="selectSlot(slot)"
@@ -86,7 +91,7 @@
           }
         </ul>
       }
-      @if (selectedSlot() !== "") {
+      @if (selectedSlot() !== '') {
         <p>Selected time: {{ selectedSlot() }}</p>
         <form
           class="booking-form"
@@ -95,15 +100,33 @@
         >
           <mat-form-field appearance="outline">
             <mat-label>Name:</mat-label>
-            <input matInput type="text" id="name" #nameInput required />
+            <input
+              matInput
+              type="text"
+              id="name"
+              #nameInput
+              required
+              maxlength="100"
+              autocomplete="name"
+            />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Email:</mat-label>
-            <input matInput type="email" id="email" #emailInput required />
+            <input
+              matInput
+              type="email"
+              id="email"
+              #emailInput
+              required
+              maxlength="254"
+              autocomplete="email"
+            />
           </mat-form-field>
 
-          <button matButton="filled" type="submit" [disabled]="bookingInProgress()">Submit</button>
+          <button matButton="filled" type="submit" [disabled]="bookingInProgress()">
+            Book consultation
+          </button>
         </form>
       }
 
@@ -142,8 +165,12 @@
     <p>{{ filterValidationError() }}</p>
   }
 
-  <p>{{ cancelingMessage() }}</p>
-  <p>{{ cancelingError() }}</p>
+  @if (cancelingMessage()) {
+    <p role="status">{{ cancelingMessage() }}</p>
+  }
+  @if (cancelingError()) {
+    <p role="alert">{{ cancelingError() }}</p>
+  }
 
   @if (bookingResource.isLoading()) {
     <p>Loading bookings...</p>
@@ -155,25 +182,14 @@
     @if (bookingResource.value().length === 0 && !bookingResource.isLoading()) {
       <p>No bookings match this filter.</p>
     } @else {
-      @for (booking of bookingResource.value(); track booking.id) {
-        <p>
-          Booking #{{ booking.id }}. Name: {{ booking.name }}. Consultant:
-          {{ booking.consultantId }}. Date: {{ booking.date }} {{ booking.time }}
-        </p>
-
-        <button
-          matButton="outlined"
-          type="button"
-          (click)="cancelBooking(booking.id)"
-          [disabled]="cancelingBookingId() !== null || bookingResource.isLoading()"
-        >
-          @if (cancelingBookingId() === booking.id) {
-            Canceling #{{ booking.id }}
-          } @else {
-            Cancel
-          }
-        </button>
-      }
+      <div class="bookings-grid">
+        @for (booking of bookingResource.value(); track booking.id) {
+          <ng-container
+            [ngTemplateOutlet]="bookingCard"
+            [ngTemplateOutletContext]="{ $implicit: booking, loading: bookingResource.isLoading() }"
+          />
+        }
+      </div>
     }
   }
 
@@ -200,34 +216,23 @@
     <p>Could not load booking.</p>
   }
 
-  @if (searchValidationError() !== "") {
+  @if (searchValidationError() !== '') {
     <p>{{ searchValidationError() }}</p>
   }
 
   @if (bookingSearchResource.hasValue()) {
-    <p>
-      Booking #{{ bookingSearchResource.value().id }}. Name:
-      {{ bookingSearchResource.value().name }}. Consultant:
-      {{ bookingSearchResource.value().consultantId }}. Date:
-      {{ bookingSearchResource.value().date }} {{ bookingSearchResource.value().time }}
-    </p>
+    <div class="search-result">
+      <ng-container
+        [ngTemplateOutlet]="bookingCard"
+        [ngTemplateOutletContext]="{
+          $implicit: bookingSearchResource.value(),
+          loading: bookingSearchResource.isLoading(),
+        }"
+      />
+    </div>
   }
 
   <div class="search-actions">
-    @if (bookingSearchResource.hasValue()) {
-      <button
-        matButton="outlined"
-        type="button"
-        [disabled]="cancelingBookingId() !== null || bookingSearchResource.isLoading()"
-        (click)="cancelBooking(bookingSearchResource.value().id)"
-      >
-        @if (cancelingBookingId() === bookingSearchResource.value().id) {
-          Canceling #{{ bookingSearchResource.value().id }}
-        } @else {
-          Cancel
-        }
-      </button>
-    }
     <button
       matButton="outlined"
       type="button"
@@ -238,4 +243,40 @@
       Clear result
     </button>
   </div>
+
+  <ng-template #bookingCard let-booking let-loading="loading">
+    <mat-card appearance="outlined" class="booking-card">
+      <mat-card-header>
+        <mat-card-title>{{ booking.name }}</mat-card-title>
+        <mat-card-subtitle>Booking #{{ booking.id }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <dl class="booking-details">
+          <div>
+            <dt>Consultant</dt>
+            <dd>{{ consultantNames().get(booking.consultantId) ?? '#' + booking.consultantId }}</dd>
+          </div>
+          <div>
+            <dt>Date and time</dt>
+            <dd>
+              <time [attr.datetime]="booking.date + 'T' + booking.time">
+                {{ booking.date | date: 'EEE, d MMM yyyy' }} at {{ booking.time.slice(0, 5) }}
+              </time>
+            </dd>
+          </div>
+        </dl>
+      </mat-card-content>
+      <mat-card-actions>
+        <button
+          matButton="outlined"
+          type="button"
+          [disabled]="cancelingBookingId() !== null || loading"
+          [attr.aria-label]="'Cancel booking #' + booking.id"
+          (click)="cancelBooking(booking.id)"
+        >
+          {{ cancelingBookingId() === booking.id ? 'Canceling…' : 'Cancel booking' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </ng-template>
 </main>

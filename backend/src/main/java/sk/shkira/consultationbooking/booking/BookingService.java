@@ -1,8 +1,6 @@
 package sk.shkira.consultationbooking.booking;
 
-import jakarta.xml.bind.ValidationException;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

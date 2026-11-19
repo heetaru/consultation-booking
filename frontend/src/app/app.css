@@ -98,3 +98,43 @@
   gap: 12px;
   margin-top: 16px;
 }
+
+.consultant-selected {
+  --mat-card-outlined-outline-color: var(--mat-sys-primary);
+  background-color: var(--mat-sys-primary-container);
+}
+
+.bookings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+}
+
+.booking-card {
+  background-color: var(--mat-sys-surface-container-lowest);
+}
+
+.booking-card mat-card-actions {
+  margin-top: auto;
+  padding: 0 16px 16px;
+}
+
+.booking-details {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.booking-details dt {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+}
+
+.booking-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.search-result {
+  max-width: 600px;
+}
